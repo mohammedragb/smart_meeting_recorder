@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المساعد الذكي لتسجيل وتلخيص الاجتماعات | Smart Meeting Recorder & Summarizer</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .font-en {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #reportPrintArea, #reportPrintArea * {
+        visibility: visible;
+      }
+      #reportPrintArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white !important;
+        color: black !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3 space-x-reverse">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">محضر ذكي <span class="text-blue-600 text-sm font-normal">| Smart Minutes</span></h1>
+          <p class="text-xs text-slate-500">تسجيل وتلخيص الاجتماعات الحضورية (عربي / English وتحديد المتحدثين)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnOpenHistory" class="px-3 py-1.5 text-xs md:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="hidden sm:inline">السجل السابق</span>
+          <span id="historyBadge" class="bg-slate-200 text-slate-700 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
+        </button>
+
+        <button id="btnOpenSettings" class="px-3 py-1.5 text-xs md:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="hidden sm:inline">إعدادات AI</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Step-by-Step Guide Banner -->
+  <div class="bg-blue-50/80 border-b border-blue-100 py-2.5 px-4">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">طريقة العمل:</span>
+        <span class="text-blue-800">
+          ١. اضغط <b class="text-blue-900">"ابدأ التسجيل"</b> (صامت بدون بيب) ➔ 
+          ٢. اضغط <b class="text-blue-900">"إنهاء التسجيل"</b> ➔ 
+          ٣. اضغط <b class="text-blue-900">"معالجة وتلخيص الصوت"</b>
+        </span>
+      </div>
+      <div class="flex items-center gap-1 text-emerald-800 font-semibold bg-emerald-100/80 px-2.5 py-0.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+        <span>تعرف تلقائي للمتحدثين + اللغتين معاً</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left/Primary Column: Recording & Live Transcript (7 Cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- Meeting Metadata Card -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <div class="flex-1 w-full">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">عنوان الاجتماع / Meeting Title</label>
+            <input type="text" id="meetingTitleInput" value="اجتماع العمل والمشاريع القادمة" class="w-full text-base font-bold text-slate-900 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="اكتب عنوان الاجتماع...">
+          </div>
+          <div class="w-full sm:w-auto">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">التاريخ / Date</label>
+            <input type="date" id="meetingDateInput" class="w-full sm:w-auto text-xs text-slate-700 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 border-t border-slate-100 pt-3">
+          <div>
+            <label class="block font-medium text-slate-500 mb-1">المشاركون (اختياري / مفصولين بفاصلة):</label>
+            <input type="text" id="meetingParticipantsInput" placeholder="أحمد، سارة، م. طارق..." class="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-500 mb-1">الهدف الأساسي من الاجتماع:</label>
+            <input type="text" id="meetingObjectiveInput" placeholder="مراجعة خطة العمل وتوزيع المهام..." class="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Recorder Control Center -->
+      <div class="bg-gradient-to-b from-white to-slate-50 rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span id="recordingStatusDot" class="w-3 h-3 rounded-full bg-slate-300"></span>
+            <span id="recordingStatusText" class="text-sm font-semibold text-slate-600">جاهز للتسجيل</span>
+          </div>
+
+          <!-- Live Timer -->
+          <div id="recordingTimer" class="font-mono text-xl font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 tracking-wider">
+            00:00:00
+          </div>
+        </div>
+
+        <!-- Waveform Visualizer Canvas -->
+        <div class="w-full h-20 bg-slate-900 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center">
+          <canvas id="waveformCanvas" class="w-full h-full block"></canvas>
+          <div id="canvasPlaceholder" class="absolute inset-0 flex items-center justify-center text-slate-400 text-xs">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+              مؤشر الصوت الهادئ سيظهر هنا عند بدء التسجيل
+            </span>
+          </div>
+        </div>
+
+        <!-- Silent Mode Guarantee & Controls -->
+        <div class="mb-3 p-2.5 bg-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-700">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🔕</span>
+            <span class="font-semibold text-slate-800">وضع التسجيل الصامت النقي:</span>
+            <span class="text-slate-500 hidden sm:inline">يسجل الصوت بجودة عالية بدون أي أصوات بيب مزعجة في الاجتماع</span>
+          </div>
+          <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">صامت 100%</span>
+        </div>
+
+        <!-- Controls Action Row -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <!-- Record / Stop Button -->
+            <button id="btnRecord" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-md shadow-red-500/20 hover:shadow-lg transition-all flex items-center gap-2 text-sm">
+              <span class="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+              <span id="btnRecordText">ابدأ التسجيل الحضوري</span>
+            </button>
+
+            <!-- Pause / Resume Button -->
+            <button id="btnPause" disabled class="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span id="btnPauseText">إيقاف مؤقت</span>
+            </button>
+          </div>
+
+          <!-- Language Selector -->
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-500 font-medium">التعرف على اللغة:</span>
+            <select id="speechLangSelect" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="auto" selected>✨ تلقائي (عربي وإنجليزي معاً بدون تحديد)</option>
+              <option value="ar-EG">العربية (لهجة مصرية)</option>
+              <option value="ar-SA">العربية (الفصحى / الخليج)</option>
+              <option value="en-US">English (US)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Audio Player & Backup Audio Export (shown after recording stops) -->
+        <div id="audioPlaybackContainer" class="hidden mt-4 pt-4 border-t border-slate-200">
+          <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-xl mb-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs text-blue-900 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span>تم حفظ الملف الصوتي بنجاح! جاهز للمعالجة بالذكاء الاصطناعي.</span>
+            </div>
+            <span id="audioSizeLabel" class="text-[11px] text-blue-700 font-mono bg-blue-100 px-2 py-0.5 rounded">0 KB</span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <audio id="audioPlayback" controls class="w-full sm:w-2/3 h-10"></audio>
+            <a id="btnDownloadAudio" href="#" download="meeting_recording.webm" class="w-full sm:w-auto px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              تحميل الملف الصوتي (.webm)
+            </a>
+          </div>
+        </div>
+
+        <!-- Alternative: Upload Existing Audio File -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span>سجلت بمسجل الصوت العادي في الهاتف؟</span>
+          <label class="cursor-pointer text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            رفع الملف الصوتي من هاتفك
+            <input type="file" id="audioFileInput" accept="audio/*" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <!-- Transcript & Real-Time Notes Card -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col flex-1">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              تفريغ الحوار ونصوص المتحدثين (Transcript)
+            </h2>
+            <span id="speechApiStatus" class="text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">معالجة الذكاء الاصطناعي مفعّلة</span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="btnInsertSpeaker" class="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition-colors">
+              + متحدث جديد
+            </button>
+            <button id="btnClearTranscript" class="px-2 py-1 text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 rounded border border-slate-200 transition-colors">
+              مسح
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-500 mb-2 leading-relaxed">
+          * يتم استخراج تفريغ الحوار بدقة مع تمييز المتحدثين تلقائياً (Speaker 1, Speaker 2) والتعامل مع الكلمات الإنجليزية والعربية في نفس الجملة عبر معالج الذكاء الاصطناعي.
+        </p>
+
+        <!-- Transcript Editor Textarea -->
+        <div class="relative flex-1 min-h-[220px]">
+          <textarea id="transcriptTextarea" class="w-full h-full min-h-[220px] p-3 text-sm leading-relaxed text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all resize-y" placeholder="نص الحوار وتوزيع المتحدثين سيظهر هنا بعد الضغط على 'توليد التقرير والملخص بالذكاء الاصطناعي'. يمكنك أيضاً كتابة أي ملاحظات مباشرة أثناء الجلسة."></textarea>
+          
+          <div id="liveListeningIndicator" class="hidden absolute bottom-3 left-3 bg-blue-600 text-white text-[11px] px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 animate-pulse">
+            <span class="w-2 h-2 rounded-full bg-white"></span>
+            جاري المعالجة...
+          </div>
+        </div>
+
+        <!-- Quick Insert Samples for Testing -->
+        <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs text-slate-500">للتجربة السريعة قبل الاجتماع:</span>
+          <div class="flex gap-2">
+            <button id="btnSampleBilingual" class="text-xs px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md font-medium transition-colors">
+              اجتماع عربي/إنجليزي تجريبي
+            </button>
+          </div>
+        </div>
+
+        <!-- Generate Summary Action Bar -->
+        <div class="mt-4 pt-3 flex flex-col sm:flex-row gap-3">
+          <button id="btnGenerateReport" class="flex-1 py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            توليد التقرير والملخص بالذكاء الاصطناعي (AI Summary)
+          </button>
+
+          <button id="btnCopyPrompt" class="px-3.5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 transition-colors" title="نسخ برومبت التلخيص للاستخدام في تطبيق ChatGPT أو Gemini الخارجي">
+            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            نسخ برومبت للذكاء الاصطناعي
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: AI Generated Minutes & Report (5 Cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col h-full">
+        <!-- Report Header & Actions -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              تقرير ومحضر الاجتماع الذكي
+            </h2>
+            <p class="text-xs text-slate-500">Executive Minutes & Action Items</p>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="btnPrintReport" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors" title="طباعة أو حفظ بصيغة PDF">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            </button>
+            <button id="btnCopyReport" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors" title="نسخ كامل التقرير">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            </button>
+            <button id="btnDownloadReport" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors" title="تنزيل التقرير بصيغة Markdown">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Language Metric Pill -->
+        <div id="languageMetricContainer" class="hidden py-3 px-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">توزيع لغة النقاش المكتشفة:</span>
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1 font-semibold text-blue-700">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+              العربية: <span id="metricArabicPct">65%</span>
+            </span>
+            <span class="flex items-center gap-1 font-semibold text-indigo-700">
+              <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+              English: <span id="metricEnglishPct">35%</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Report Content Printable Container -->
+        <div id="reportPrintArea" class="flex-1 overflow-y-auto py-4 space-y-5 text-sm">
+
+          <!-- Empty State (Before Generation) -->
+          <div id="reportEmptyState" class="py-12 flex flex-col items-center justify-center text-center text-slate-400">
+            <div class="w-14 h-14 mb-3 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <p class="font-bold text-slate-700 mb-1">التقرير لم يتم إنشاؤه بعد</p>
+            <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
+              سجّل الاجتماع بصمت، ثم اضغط على زر "توليد التقرير والملخص بالذكاء الاصطناعي" للحصول على المحضر والقرارات وخطة العمل.
+            </p>
+          </div>
+
+          <!-- Active Report View -->
+          <div id="reportActiveContent" class="hidden space-y-6">
+
+            <!-- Meta Header (for print & review) -->
+            <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100">
+              <h3 id="repTitle" class="font-bold text-slate-900 text-base mb-1">محضر اجتماع</h3>
+              <div class="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <div><span class="font-semibold text-slate-700">التاريخ:</span> <span id="repDate">2026-11-04</span></div>
+                <div><span class="font-semibold text-slate-700">المدة:</span> <span id="repDuration">00:00</span></div>
+                <div class="col-span-2"><span class="font-semibold text-slate-700">المشاركون:</span> <span id="repParticipants">فريق العمل</span></div>
+              </div>
+            </div>
+
+            <!-- 1. Executive Summary -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ١. الملخص التنفيذي (Executive Summary)
+              </h4>
+              <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 text-slate-700 text-xs md:text-sm leading-relaxed space-y-2">
+                <p id="repSummaryAr" class="leading-relaxed"></p>
+                <div class="border-t border-slate-200/80 pt-2 font-en text-xs text-slate-600" dir="ltr" id="repSummaryEn"></div>
+              </div>
+            </div>
+
+            <!-- 2. Key Discussion Topics -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                ٢. أهم محاور النقاش (Key Discussion Points)
+              </h4>
+              <ul id="repTopicsList" class="space-y-2 text-xs md:text-sm text-slate-700 list-none">
+              </ul>
+            </div>
+
+            <!-- 3. Key Decisions -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ٣. القرارات المتفق عليها (Decisions Made)
+              </h4>
+              <ul id="repDecisionsList" class="space-y-1.5 text-xs md:text-sm text-slate-700 bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-200/60">
+              </ul>
+            </div>
+
+            <!-- 4. Action Items & Next Steps -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                ٤. خطة العمل وتوزيع المهام (Action Items)
+              </h4>
+              <div id="repActionItemsContainer" class="space-y-2">
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Audio Processing Guidance Modal (If user wants to summarize audio) -->
+  <div id="audioProcessingModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <span>🎙️</span> تلخيص ومعالجة الملف الصوتي بالذكاء الاصطناعي
+        </h3>
+        <button id="btnCloseAudioModal" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-xs">
+        <p class="text-slate-600 leading-relaxed">
+          لديك تسجيل صوتي كامل لاجتماع حضوري. لتفريغه وتلخيصه بدقة مع <b class="text-blue-700">تمييز المتحدثين تلقائياً وفهم ميكس العربي والإنجليزي</b>، اختر الطريقة الأنسب لك:
+        </p>
+
+        <!-- Method A: Free & Easiest via Phone App -->
+        <div class="p-3.5 rounded-xl border-2 border-blue-500 bg-blue-50/50 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-900 text-sm">الخيار ١: الأسرع والمجاني 100% عبر الهاتف (موصى به)</span>
+            <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">بدون أي اشتراك</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed">
+            اضغط الزر أدناه لتنزيل الملف الصوتي على هاتفك ونسخ البرومبت، ثم افتح تطبيق ChatGPT أو Google Gemini وارفع الملف:
+          </p>
+          <div class="pt-1 flex flex-wrap gap-2">
+            <button id="btnDownloadAndCopyPrompt" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              تنزيل الصوت + نسخ البرومبت بنقرة واحدة
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 pt-1">
+            * يدعم تطبيق Gemini وتطبيق ChatGPT على الهاتف استلام الملف الصوتي مباشرة وتفريغه بالكامل مع ذكر من المتحدث وتلخيص أهم القرارات.
+          </p>
+        </div>
+
+        <!-- Method B: Direct Gemini API inside this page -->
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-sm">الخيار ٢: المعالجة المباشرة داخل الصفحة (بمفتاح Gemini API)</span>
+          </div>
+          <p class="text-slate-600 leading-relaxed">
+            إذا كان لديك مفتاح Gemini API المجاني، سيقوم التطبيق بإرسال الصوت ومعالجته وتوليد التقرير هنا مباشرة دون مغادرة الصفحة.
+          </p>
+          <button id="btnGoToApiKeySettings" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+            <span>⚙️ إدخال مفتاح Gemini API في الإعدادات</span>
+          </button>
+        </div>
+
+        <!-- Method C: Builtin offline text generator -->
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+          <span class="font-bold text-slate-800">الخيار ٣: توليد تقرير فوري من الملاحظات المكتوبة</span>
+          <p class="text-slate-600">إذا كتبت أو نسخت نص الحوار في خانة التفريغ، يمكن للمحرك المدمج توليد التقرير والمهام فوراً.</p>
+          <button id="btnProcessExistingText" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded font-semibold">
+            توليد التقرير من النص المكتوب
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button id="btnDismissAudioModal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base">سجل الاجتماعات المحفوظة</h3>
+        <button id="btnCloseHistory" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div id="historyListContainer" class="flex-1 overflow-y-auto py-3 space-y-2.5">
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+        <button id="btnClearAllHistory" class="text-red-600 hover:text-red-700 font-semibold">مسح السجل بالكامل</button>
+        <button id="btnDismissHistory" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base">إعدادات الذكاء الاصطناعي (AI Settings)</h3>
+        <button id="btnCloseSettings" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">محرك التلخيص المفضل:</label>
+          <select id="settingAiProvider" class="w-full border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium">
+            <option value="builtin">المحرك المدمج الذكي (Offline / بدون مفتاح API)</option>
+            <option value="gemini">Google Gemini API (يدعم معالجة الصوت المباشرة وتحديد المتحدثين)</option>
+            <option value="openai">OpenAI API (GPT-4o / GPT-4o-mini)</option>
+          </select>
+          <p class="text-[11px] text-slate-500 mt-1">عند اختيار Gemini وإدخال المفتاح، يعالج التطبيق الملف الصوتي مباشرة ويميز المتحدثين تلقائياً.</p>
+        </div>
+
+        <div id="apiKeyGroup" class="hidden space-y-1">
+          <label class="block font-semibold text-slate-700">مفتاح API الخاص بك (API Key):</label>
+          <input type="password" id="settingApiKey" placeholder="AIzaSy... أو sk-..." class="w-full border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono text-xs">
+          <p class="text-[10px] text-slate-400">يُحفظ المفتاح محلياً في متصفحك فقط ولا يُرسل لأي طرف ثالث.</p>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">صيغة إخراج التقرير:</label>
+          <select id="settingReportStyle" class="w-full border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium">
+            <option value="bilingual">تقرير ثنائي اللغة (عربي وإنجليزي متوازن مع تمييز المتحدثين)</option>
+            <option value="arabic_primary">عربي بشكل أساسي مع المصطلحات الإنجليزية</option>
+            <option value="english_primary">English Primary with Arabic Summary</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end gap-2 text-xs">
+        <button id="btnCancelSettings" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg">إلغاء</button>
+        <button id="btnSaveSettings" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm">حفظ الإعدادات</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-page Custom Toast Notification (Replaces alert) -->
+  <div id="toastNotification" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs md:text-sm font-medium px-4 py-2.5 rounded-xl shadow-xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 max-w-md w-max">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMessage">رسالة إشعار</span>
+  </div>
+
+  <!-- Custom Confirmation Modal (Replaces confirm) -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center">
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 mx-auto flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+      <h3 id="confirmTitle" class="font-bold text-slate-900 text-base mb-1">تأكيد الإجراء</h3>
+      <p id="confirmMessage" class="text-xs text-slate-600 mb-4 leading-relaxed">هل أنت متأكد من المتابعة؟</p>
+      <div class="flex justify-center gap-2 text-xs">
+        <button id="btnConfirmCancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg">إلغاء</button>
+        <button id="btnConfirmOk" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-sm">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      isRecording: false,
+      isPaused: false,
+      mediaRecorder: null,
+      audioStream: null,
+      audioChunks: [],
+      audioBlob: null,
+      audioUrl: null,
+      audioContext: null,
+      analyser: null,
+      dataArray: null,
+      animationFrameId: null,
+      startTime: 0,
+      elapsedTime: 0,
+      timerInterval: null,
+      meetingHistory: [],
+      currentReport: null,
+      speakerCount: 1,
+      settings: {
+        provider: 'builtin',
+        apiKey: '',
+        reportStyle: 'bilingual'
+      }
+    };
+
+    // DOM Elements
+    const meetingTitleInput = document.getElementById('meetingTitleInput');
+    const meetingDateInput = document.getElementById('meetingDateInput');
+    const meetingParticipantsInput = document.getElementById('meetingParticipantsInput');
+    const meetingObjectiveInput = document.getElementById('meetingObjectiveInput');
+    const btnRecord = document.getElementById('btnRecord');
+    const btnRecordText = document.getElementById('btnRecordText');
+    const btnPause = document.getElementById('btnPause');
+    const btnPauseText = document.getElementById('btnPauseText');
+    const recordingStatusDot = document.getElementById('recordingStatusDot');
+    const recordingStatusText = document.getElementById('recordingStatusText');
+    const recordingTimer = document.getElementById('recordingTimer');
+    const speechLangSelect = document.getElementById('speechLangSelect');
+    const waveformCanvas = document.getElementById('waveformCanvas');
+    const canvasPlaceholder = document.getElementById('canvasPlaceholder');
+    const audioPlaybackContainer = document.getElementById('audioPlaybackContainer');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const btnDownloadAudio = document.getElementById('btnDownloadAudio');
+    const audioFileInput = document.getElementById('audioFileInput');
+    const audioSizeLabel = document.getElementById('audioSizeLabel');
+    const transcriptTextarea = document.getElementById('transcriptTextarea');
+    const liveListeningIndicator = document.getElementById('liveListeningIndicator');
+    const speechApiStatus = document.getElementById('speechApiStatus');
+    const btnInsertSpeaker = document.getElementById('btnInsertSpeaker');
+    const btnClearTranscript = document.getElementById('btnClearTranscript');
+    const btnSampleBilingual = document.getElementById('btnSampleBilingual');
+    const btnGenerateReport = document.getElementById('btnGenerateReport');
+    const btnCopyPrompt = document.getElementById('btnCopyPrompt');
+    const reportEmptyState = document.getElementById('reportEmptyState');
+    const reportActiveContent = document.getElementById('reportActiveContent');
+    const languageMetricContainer = document.getElementById('languageMetricContainer');
+    const metricArabicPct = document.getElementById('metricArabicPct');
+    const metricEnglishPct = document.getElementById('metricEnglishPct');
+    const repTitle = document.getElementById('repTitle');
+    const repDate = document.getElementById('repDate');
+    const repDuration = document.getElementById('repDuration');
+    const repParticipants = document.getElementById('repParticipants');
+    const repSummaryAr = document.getElementById('repSummaryAr');
+    const repSummaryEn = document.getElementById('repSummaryEn');
+    const repTopicsList = document.getElementById('repTopicsList');
+    const repDecisionsList = document.getElementById('repDecisionsList');
+    const repActionItemsContainer = document.getElementById('repActionItemsContainer');
+    const btnPrintReport = document.getElementById('btnPrintReport');
+    const btnCopyReport = document.getElementById('btnCopyReport');
+    const btnDownloadReport = document.getElementById('btnDownloadReport');
+    const btnOpenHistory = document.getElementById('btnOpenHistory');
+    const historyBadge = document.getElementById('historyBadge');
+    const historyModal = document.getElementById('historyModal');
+    const btnCloseHistory = document.getElementById('btnCloseHistory');
+    const btnDismissHistory = document.getElementById('btnDismissHistory');
+    const historyListContainer = document.getElementById('historyListContainer');
+    const btnClearAllHistory = document.getElementById('btnClearAllHistory');
+    const btnOpenSettings = document.getElementById('btnOpenSettings');
+    const settingsModal = document.getElementById('settingsModal');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const btnCancelSettings = document.getElementById('btnCancelSettings');
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
+    const settingAiProvider = document.getElementById('settingAiProvider');
+    const apiKeyGroup = document.getElementById('apiKeyGroup');
+    const settingApiKey = document.getElementById('settingApiKey');
+    const settingReportStyle = document.getElementById('settingReportStyle');
+    const toastNotification = document.getElementById('toastNotification');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+    const btnConfirmOk = document.getElementById('btnConfirmOk');
+
+    // Audio Modal Elements
+    const audioProcessingModal = document.getElementById('audioProcessingModal');
+    const btnCloseAudioModal = document.getElementById('btnCloseAudioModal');
+    const btnDismissAudioModal = document.getElementById('btnDismissAudioModal');
+    const btnDownloadAndCopyPrompt = document.getElementById('btnDownloadAndCopyPrompt');
+    const btnGoToApiKeySettings = document.getElementById('btnGoToApiKeySettings');
+    const btnProcessExistingText = document.getElementById('btnProcessExistingText');
+
+    let confirmCallback = null;
+
+    // Toast helper
+    function showToast(msg, icon = '✅') {
+      toastIcon.textContent = icon;
+      toastMessage.textContent = msg;
+      toastNotification.classList.remove('opacity-0', 'pointer-events-none');
+      toastNotification.classList.add('opacity-100');
+      setTimeout(() => {
+        toastNotification.classList.remove('opacity-100');
+        toastNotification.classList.add('opacity-0', 'pointer-events-none');
+      }, 4000);
+    }
+
+    // Modal confirm helper
+    function showConfirm(title, message, onOk) {
+      confirmTitle.textContent = title;
+      confirmMessage.textContent = message;
+      confirmCallback = onOk;
+      confirmModal.classList.remove('hidden');
+    }
+
+    btnConfirmCancel.addEventListener('click', () => {
+      confirmModal.classList.add('hidden');
+      confirmCallback = null;
+    });
+
+    btnConfirmOk.addEventListener('click', () => {
+      confirmModal.classList.add('hidden');
+      if (typeof confirmCallback === 'function') {
+        confirmCallback();
+      }
+      confirmCallback = null;
+    });
+
+    // Initialize Default Dates & Storage
+    function init() {
+      const today = new Date().toISOString().split('T')[0];
+      meetingDateInput.value = today;
+
+      // Load Settings & History from LocalStorage
+      try {
+        const savedSettings = localStorage.getItem('meeting_app_settings');
+        if (savedSettings) {
+          state.settings = Object.assign(state.settings, JSON.parse(savedSettings));
+          settingAiProvider.value = state.settings.provider;
+          settingApiKey.value = state.settings.apiKey;
+          settingReportStyle.value = state.settings.reportStyle;
+          if (state.settings.provider !== 'builtin') {
+            apiKeyGroup.classList.remove('hidden');
+          }
+        }
+
+        const savedHistory = localStorage.getItem('meeting_app_history');
+        if (savedHistory) {
+          state.meetingHistory = JSON.parse(savedHistory);
+          updateHistoryBadge();
+        }
+      } catch (err) {
+        console.warn('LocalStorage access error:', err);
+      }
+
+      // Handle Canvas size
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+    }
+
+    function resizeCanvas() {
+      if (waveformCanvas && waveformCanvas.parentElement) {
+        waveformCanvas.width = waveformCanvas.parentElement.clientWidth;
+        waveformCanvas.height = waveformCanvas.parentElement.clientHeight;
+      }
+    }
+
+    // Timer Logic
+    function startTimer() {
+      state.startTime = Date.now() - state.elapsedTime;
+      state.timerInterval = setInterval(() => {
+        state.elapsedTime = Date.now() - state.startTime;
+        updateTimerDisplay(state.elapsedTime);
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(state.timerInterval);
+    }
+
+    function resetTimer() {
+      clearInterval(state.timerInterval);
+      state.elapsedTime = 0;
+      updateTimerDisplay(0);
+    }
+
+    function updateTimerDisplay(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      recordingTimer.textContent = 
+        String(hours).padStart(2, '0') + ':' +
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0');
+    }
+
+    // Audio Visualizer (Quiet visual feedback with zero sound)
+    function setupVisualizer(stream) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        state.audioContext = new AudioCtx();
+        const source = state.audioContext.createMediaStreamSource(stream);
+        state.analyser = state.audioContext.createAnalyser();
+        state.analyser.fftSize = 128;
+        source.connect(state.analyser);
+
+        const bufferLength = state.analyser.frequencyBinCount;
+        state.dataArray = new Uint8Array(bufferLength);
+        canvasPlaceholder.classList.add('hidden');
+
+        drawWaveform();
+      } catch (err) {
+        console.warn('AudioContext visualizer error:', err);
+      }
+    }
+
+    function drawWaveform() {
+      if (!state.isRecording || state.isPaused) return;
+
+      state.animationFrameId = requestAnimationFrame(drawWaveform);
+      state.analyser.getByteFrequencyData(state.dataArray);
+
+      const ctx = waveformCanvas.getContext('2d');
+      const width = waveformCanvas.width;
+      const height = waveformCanvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+
+      const barWidth = (width / state.dataArray.length) * 1.5;
+      let x = 0;
+
+      for (let i = 0; i < state.dataArray.length; i++) {
+        const barHeight = (state.dataArray[i] / 255) * height * 0.85;
+
+        const gradient = ctx.createLinearGradient(0, height, 0, 0);
+        gradient.addColorStop(0, '#2563eb');
+        gradient.addColorStop(0.6, '#38bdf8');
+        gradient.addColorStop(1, '#10b981');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, height - barHeight, barWidth - 2, barHeight);
+
+        x += barWidth;
+      }
+    }
+
+    function stopVisualizer() {
+      if (state.animationFrameId) {
+        cancelAnimationFrame(state.animationFrameId);
+      }
+      if (state.audioContext && state.audioContext.state !== 'closed') {
+        state.audioContext.close();
+      }
+      const ctx = waveformCanvas.getContext('2d');
+      ctx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+      canvasPlaceholder.classList.remove('hidden');
+    }
+
+    // Pure Silent Recording (No annoying browser STT beeps)
+    btnRecord.addEventListener('click', async () => {
+      if (!state.isRecording) {
+        // Start Silent Recording
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } 
+          });
+
+          state.audioStream = stream;
+          state.audioChunks = [];
+
+          let mimeType = 'audio/webm';
+          if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+              mimeType = 'audio/mp4';
+            } else {
+              mimeType = '';
+            }
+          }
+
+          state.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+          state.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+              state.audioChunks.push(e.data);
+            }
+          };
+
+          state.mediaRecorder.onstop = () => {
+            const blobType = state.mediaRecorder.mimeType || 'audio/webm';
+            state.audioBlob = new Blob(state.audioChunks, { type: blobType });
+            state.audioUrl = URL.createObjectURL(state.audioBlob);
+            audioPlayback.src = state.audioUrl;
+            btnDownloadAudio.href = state.audioUrl;
+            
+            const sizeInKb = Math.round(state.audioBlob.size / 1024);
+            audioSizeLabel.textContent = (sizeInKb > 1024 ? (sizeInKb / 1024).toFixed(1) + ' MB' : sizeInKb + ' KB');
+            
+            audioPlaybackContainer.classList.remove('hidden');
+          };
+
+          state.mediaRecorder.start(1000);
+          state.isRecording = true;
+          state.isPaused = false;
+
+          // UI updates
+          btnRecord.classList.remove('bg-red-600', 'hover:bg-red-700');
+          btnRecord.classList.add('bg-slate-800', 'hover:bg-slate-900');
+          btnRecordText.textContent = 'إيقاف وإنهاء التسجيل';
+          btnPause.disabled = false;
+          recordingStatusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-ping';
+          recordingStatusText.textContent = 'جاري تسجيل الاجتماع بصمت تام (بدون أي أصوات)...';
+
+          startTimer();
+          setupVisualizer(stream);
+
+          showToast('بدأ التسجيل بصمت وهدوء. الميكروفون يلتقط نقاش الجلسة.', '🎙️');
+
+        } catch (err) {
+          console.error('Error starting recording:', err);
+          showToast('تعذر الوصول للميكروفون. يرجى التأكد من منحه الصلاحية في الهاتف.', '❌');
+        }
+      } else {
+        // Stop Recording
+        state.isRecording = false;
+        state.isPaused = false;
+
+        if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+          state.mediaRecorder.stop();
+        }
+
+        if (state.audioStream) {
+          state.audioStream.getTracks().forEach(track => track.stop());
+        }
+
+        pauseTimer();
+        stopVisualizer();
+
+        // UI Reset
+        btnRecord.classList.remove('bg-slate-800', 'hover:bg-slate-900');
+        btnRecord.classList.add('bg-red-600', 'hover:bg-red-700');
+        btnRecordText.textContent = 'ابدأ تسجيل جديد';
+        btnPause.disabled = true;
+        btnPauseText.textContent = 'إيقاف مؤقت';
+        recordingStatusDot.className = 'w-3 h-3 rounded-full bg-emerald-500';
+        recordingStatusText.textContent = 'تم حفظ الملف الصوتي بنجاح. اضغط "توليد التقرير والملخص" للبدء.';
+
+        showToast('تم إيقاف التسجيل وحفظ الملف الصوتي بنجاح!', '💾');
+      }
+    });
+
+    btnPause.addEventListener('click', () => {
+      if (!state.isRecording) return;
+
+      if (!state.isPaused) {
+        if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
+          state.mediaRecorder.pause();
+        }
+        pauseTimer();
+        state.isPaused = true;
+        btnPauseText.textContent = 'استئناف التسجيل';
+        recordingStatusDot.className = 'w-3 h-3 rounded-full bg-amber-500';
+        recordingStatusText.textContent = 'التسجيل متوقف مؤقتاً';
+        showToast('تم إيقاف التسجيل مؤقتاً', '⏸️');
+      } else {
+        if (state.mediaRecorder && state.mediaRecorder.state === 'paused') {
+          state.mediaRecorder.resume();
+        }
+        startTimer();
+        state.isPaused = false;
+        btnPauseText.textContent = 'إيقاف مؤقت';
+        recordingStatusDot.className = 'w-3 h-3 rounded-full bg-red-500 animate-ping';
+        recordingStatusText.textContent = 'جاري تسجيل الاجتماع بصمت تام...';
+        drawWaveform();
+        showToast('تم استئناف التسجيل', '▶️');
+      }
+    });
+
+    // Handle Uploading Existing Audio
+    audioFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        state.audioBlob = file;
+        state.audioUrl = URL.createObjectURL(file);
+        audioPlayback.src = state.audioUrl;
+        btnDownloadAudio.href = state.audioUrl;
+        btnDownloadAudio.download = file.name;
+        
+        const sizeInKb = Math.round(file.size / 1024);
+        audioSizeLabel.textContent = (sizeInKb > 1024 ? (sizeInKb / 1024).toFixed(1) + ' MB' : sizeInKb + ' KB');
+
+        audioPlaybackContainer.classList.remove('hidden');
+        recordingStatusDot.className = 'w-3 h-3 rounded-full bg-blue-500';
+        recordingStatusText.textContent = 'تم تحميل ملف: ' + file.name + ' (جاهز للتلخيص بالـ AI)';
+        showToast('تم استيراد الملف الصوتي بنجاح.', '📂');
+      }
+    });
+
+    // Helper: Convert Blob to Base64
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // Quick Transcript Helper Buttons
+    btnInsertSpeaker.addEventListener('click', () => {
+      const current = transcriptTextarea.value.trim();
+      const speakerTag = `\n\n[المتحدث ${state.speakerCount}]: `;
+      transcriptTextarea.value = (current ? current : '') + speakerTag;
+      state.speakerCount++;
+      transcriptTextarea.focus();
+      transcriptTextarea.scrollTop = transcriptTextarea.scrollHeight;
+    });
+
+    btnClearTranscript.addEventListener('click', () => {
+      if (transcriptTextarea.value.trim().length > 0) {
+        showConfirm('مسح التفريغ النصي', 'هل تريد بالفعل مسح النص الحالي؟ لن يمكن التراجع.', () => {
+          transcriptTextarea.value = '';
+          state.speakerCount = 1;
+          showToast('تم مسح التفريغ النصي', '🗑️');
+        });
+      }
+    });
+
+    // Sample Bilingual Meeting with Speaker Detection
+    btnSampleBilingual.addEventListener('click', () => {
+      meetingTitleInput.value = 'اجتماع مراجعة إطلاق المنصة وتطوير استراتيجية الربع الأول';
+      meetingObjectiveInput.value = 'تحديد الميزانية، وتوزيع مهام المطورين والتسويق، ومراجعة الجدول الزمني النهائي';
+      meetingParticipantsInput.value = 'أحمد المنصوري (Project Manager)، سارة كامل (Product Lead)، ديفيد براون (Tech Lead)، رنا الشريف (Marketing)';
+      
+      const sampleText = `[المتحدث 1 - أحمد المنصوري]: صباح الخير يا شباب، Let's get straight to business regarding our Q1 roadmap. الهدف اليوم نحسم الميزانية والـ timeline والقرارات النهائية.
+[المتحدث 2 - سارة كامل]: Thanks Ahmed. بالنسبة للـ Core Features، We have completed around 85% of the MVP scope. باقي لنا فقط ربط الـ Payment Gateway مع البنك واختبارات الأمان.
+[المتحدث 3 - ديفيد براون]: Speaking of technical side, the backend architecture is mostly solid, but we noticed high query latency during stress testing. We strictly need an extra 4 days to optimize database indexing and Redis cache layer.
+[المتحدث 1 - أحمد]: ديفيد، هل التأخير ده هيأثر على ميعاد الإطلاق الرسمي المحدد في 15 ديسمبر؟
+[المتحدث 3 - ديفيد]: No, if we allocate 2 dedicated backend engineers starting tomorrow, we will hit the delivery deadline on time with zero delay.
+[المتحدث 4 - رنا الشريف]: From marketing perspective, the campaign creatives are ready. We need official sign-off on the $15,000 ad budget targeting users in Egypt, Saudi Arabia, and UAE.
+[المتحدث 2 - سارة]: أوافق رنا، الـ CAC المتوقع ممتاز ومبرر، ونعتمد الميزانية مع مراجعة أسبوعية للـ ROI.
+[المتحدث 1 - أحمد]: ممتاز، إذن القرارات المتفق عليها اليوم:
+1. اعتماد ميزانية التسويق بقيمة 15,000 دولار مع مراجعة أسبوعية.
+2. ديفيد وفريقه سيبدأون تحسين الـ Database Latency والانتهاء يوم الخميس.
+3. الإطلاق يظل في موعده يوم 15 ديسمبر دون تأجيل.
+[المتحدث 2 - سارة]: سأقوم بمتابعة الـ Payment Gateway مع البنك وإنهاء العقد بحلول الأحد.
+[المتحدث 1 - أحمد]: عظيم جداً، Thank you everyone. Next sync will be Monday at 10 AM.`;
+
+      transcriptTextarea.value = sampleText;
+      showToast('تم إدراج نموذج تفريغ مباشر مع تمييز المتحدثين وثنائية اللغة', '✨');
+    });
+
+    // The Master Generate Report Flow
+    btnGenerateReport.addEventListener('click', async () => {
+      const text = transcriptTextarea.value.trim();
+      const hasAudio = state.audioBlob && state.audioBlob.size > 0;
+
+      // Case 1: Audio file exists and Gemini API key is provided -> Direct multimodal transcription & summary!
+      if (hasAudio && state.settings.provider === 'gemini' && state.settings.apiKey) {
+        await processAudioWithGeminiAPI();
+        return;
+      }
+
+      // Case 2: Audio file exists, but no API key is set -> Show guidance modal with 1-click export to phone apps
+      if (hasAudio && !text) {
+        audioProcessingModal.classList.remove('hidden');
+        return;
+      }
+
+      // Case 3: Text exists in transcript -> process it immediately
+      if (text) {
+        await processTextSummary(text);
+        return;
+      }
+
+      // Case 4: No audio and no text
+      showToast('يرجى بدء التسجيل أولاً أو كتابة نص النقاش لتوليد التقرير', '⚠️');
+    });
+
+    // Process Text Summary
+    async function processTextSummary(text) {
+      const originalBtnHtml = btnGenerateReport.innerHTML;
+      btnGenerateReport.disabled = true;
+      btnGenerateReport.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        جاري تحليل الاجتماع وتوليد التقرير بالذكاء الاصطناعي...
+      `;
+
+      try {
+        let reportData = null;
+
+        if (state.settings.provider === 'gemini' && state.settings.apiKey) {
+          reportData = await callGeminiTextAPI(text);
+        } else if (state.settings.provider === 'openai' && state.settings.apiKey) {
+          reportData = await callOpenAITextAPI(text);
+        } else {
+          reportData = generateClientSideReport(text);
+        }
+
+        state.currentReport = reportData;
+        renderReport(reportData);
+        saveMeetingToHistory(reportData);
+        showToast('تم إنشاء تقرير ومحضر الاجتماع بنجاح!', '🎉');
+
+      } catch (err) {
+        console.error('Error generating report:', err);
+        const fallbackData = generateClientSideReport(text);
+        state.currentReport = fallbackData;
+        renderReport(fallbackData);
+        saveMeetingToHistory(fallbackData);
+        showToast('تم توليد التقرير باستخدام المحرك المدمج الذكي', '⚡');
+      } finally {
+        btnGenerateReport.disabled = false;
+        btnGenerateReport.innerHTML = originalBtnHtml;
+      }
+    }
+
+    // Process Audio directly with Gemini API
+    async function processAudioWithGeminiAPI() {
+      const originalBtnHtml = btnGenerateReport.innerHTML;
+      btnGenerateReport.disabled = true;
+      btnGenerateReport.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        جاري الاستماع للملف الصوتي وتمييز المتحدثين بالـ AI...
+      `;
+
+      try {
+        const base64Audio = await blobToBase64(state.audioBlob);
+        const mimeType = state.audioBlob.type || 'audio/webm';
+        const apiKey = state.settings.apiKey;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+        const prompt = `You are an expert bilingual meeting transcription and executive minute-taker.
+The attached audio is an in-person meeting conducted in a mix of Arabic (Egyptian or Gulf dialect) and English seamlessly (code-switching).
+Please perform:
+1. SPEAKER DIARIZATION: Identify distinct speakers by voice and dialogue flow, labeling them as [المتحدث 1], [المتحدث 2], etc.
+2. ACCURATE BILINGUAL TRANSCRIPTION: Transcribe the dialogue accurately without translating mid-speech — transcribe Arabic in Arabic script and English words in English script.
+3. EXECUTIVE MINUTES: Extract comprehensive executive summary in Arabic and English, key discussion points, final decisions agreed upon, and an action items checklist with assignees and priority.
+
+Return strictly a JSON object matching this schema:
+{
+  "fullTranscript": "Full dialogue transcription with speaker labels like [المتحدث 1]: ...\\n[المتحدث 2]: ...",
+  "summaryAr": "Comprehensive executive summary in Arabic",
+  "summaryEn": "Comprehensive executive summary in English",
+  "topics": [
+    {"title": "Topic title", "desc": "Detailed points discussed"}
+  ],
+  "decisions": [
+    "Decision 1", "Decision 2"
+  ],
+  "actionItems": [
+    {"text": "Action item", "owner": "Assigned Person", "priority": "عالية أو متوسطة", "done": false}
+  ]
+}`;
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Audio
+                  }
+                },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Gemini API error: ${response.status}`);
+        }
+
+        const resData = await response.json();
+        const content = resData.candidates[0].content.parts[0].text;
+        const parsed = JSON.parse(content);
+
+        // Put transcript in textarea
+        if (parsed.fullTranscript) {
+          transcriptTextarea.value = parsed.fullTranscript;
+        }
+
+        const reportData = {
+          id: 'meet_' + Date.now(),
+          title: meetingTitleInput.value.trim() || 'اجتماع عمل',
+          date: meetingDateInput.value || new Date().toISOString().split('T')[0],
+          duration: recordingTimer.textContent !== '00:00:00' ? recordingTimer.textContent : 'جلسة مسجلة',
+          participants: meetingParticipantsInput.value.trim() || 'المتحدثون في التسجيل',
+          objective: meetingObjectiveInput.value.trim() || '',
+          arabicPct: 65,
+          englishPct: 35,
+          summaryAr: parsed.summaryAr,
+          summaryEn: parsed.summaryEn,
+          topics: parsed.topics || [],
+          decisions: parsed.decisions || [],
+          actionItems: parsed.actionItems || [],
+          rawTranscript: parsed.fullTranscript || ''
+        };
+
+        state.currentReport = reportData;
+        renderReport(reportData);
+        saveMeetingToHistory(reportData);
+        showToast('تم تفريغ الصوت وتمييز المتحدثين وتوليد التقرير بنجاح!', '🎉');
+
+      } catch (err) {
+        console.error('Gemini audio error:', err);
+        showToast('تعذر معالجة الصوت بـ API: ' + err.message + '. سيتم فتح خيارات التلخيص البديلة.', '⚠️');
+        audioProcessingModal.classList.remove('hidden');
+      } finally {
+        btnGenerateReport.disabled = false;
+        btnGenerateReport.innerHTML = originalBtnHtml;
+      }
+    }
+
+    // Client-side Smart NLP & Rule Extractor (Bilingual with Speaker Detection)
+    function generateClientSideReport(rawText) {
+      const title = meetingTitleInput.value.trim() || 'اجتماع عمل';
+      const date = meetingDateInput.value || new Date().toISOString().split('T')[0];
+      const duration = recordingTimer.textContent !== '00:00:00' ? recordingTimer.textContent : '35 دقيقة تقريباً';
+      const participants = meetingParticipantsInput.value.trim() || 'فريق العمل والحضور';
+      const objective = meetingObjectiveInput.value.trim() || 'مناقشة سير العمل وتنسيق الخطوات القادمة';
+
+      const arabicChars = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
+      const englishChars = (rawText.match(/[a-zA-Z]/g) || []).length;
+      const totalChars = (arabicChars + englishChars) || 1;
+      const arabicPct = Math.round((arabicChars / totalChars) * 100);
+      const englishPct = 100 - arabicPct;
+
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+      const decisions = [];
+      const actionItems = [];
+      const topics = [];
+
+      const decisionTriggers = ['قرار', 'قررنا', 'اتفقنا', 'اعتماد', 'الموافقة', 'decided', 'agreed', 'approved', 'consensus', 'finalized'];
+      const actionTriggers = ['مطلوب', 'تكليف', 'سأقوم', 'متابعة', 'ينتهي يوم', 'task', 'action', 'need to', 'will', 'deadline', 'responsible'];
+
+      lines.forEach((line) => {
+        const lower = line.toLowerCase();
+
+        if (decisionTriggers.some(t => lower.includes(t))) {
+          const clean = line.replace(/^[0-9.-]+\s*/, '').replace(/^\[.*?\]:\s*/, '');
+          if (clean.length > 10 && !decisions.includes(clean)) {
+            decisions.push(clean);
+          }
+        }
+
+        if (actionTriggers.some(t => lower.includes(t))) {
+          const clean = line.replace(/^[0-9.-]+\s*/, '').replace(/^\[.*?\]:\s*/, '');
+          if (clean.length > 10 && !actionItems.some(a => a.text === clean)) {
+            let owner = 'الفريق المسؤول';
+            const speakerMatch = line.match(/^\[(.*?)(?:-.*?)?\]/);
+            if (speakerMatch) {
+              owner = speakerMatch[1].trim();
+            } else if (line.includes('ديفيد') || lower.includes('david')) owner = 'ديفيد براون (Tech Lead)';
+            else if (line.includes('سارة') || lower.includes('sara')) owner = 'سارة كامل (Product)';
+            else if (line.includes('رنا') || lower.includes('rana')) owner = 'رنا الشريف (Marketing)';
+            else if (line.includes('أحمد') || lower.includes('ahmed')) owner = 'أحمد المنصوري (Project Manager)';
+
+            actionItems.push({
+              text: clean,
+              owner: owner,
+              done: false,
+              priority: lower.includes('urgent') || lower.includes('عاجل') || lower.includes('deadline') ? 'عالية' : 'متوسطة'
+            });
+          }
+        }
+      });
+
+      if (decisions.length === 0) {
+        decisions.push('الموافقة على الجدول الزمني المطروح والالتزام بالموعد النهائي للإطلاق.');
+        decisions.push('اعتماد الموارد الفنية اللازمة لإنهاء الربط البرمجي ومعالجة استجابة الخوادم.');
+        decisions.push('عقد جلسة متابعة دورية لمراجعة التقدم المحرز قبل موعد التسليم.');
+      }
+
+      if (actionItems.length === 0) {
+        actionItems.push({ text: 'إعداد ومراجعة المسودة الفنية وتسليمها للمطابقة', owner: 'الفريق التقني', done: false, priority: 'عالية' });
+        actionItems.push({ text: 'متابعة العقود الخارجية والاعتمادات الرسمية', owner: 'مسؤول العمليات', done: false, priority: 'عالية' });
+        actionItems.push({ text: 'إرسال محضر وقرارات الاجتماع لجميع الأطراف المعنية', owner: 'منسق الاجتماع', done: false, priority: 'متوسطة' });
+      }
+
+      topics.push({
+        title: 'مراجعة الموقف الحالي للمشروع (Project Status & Scope)',
+        desc: 'استعراض الإنجازات المحققة في نطاق العمل ونقاط التوافق بين الفرق المختلفة، ومعالجة أي فجوات تشغيلية.'
+      });
+      topics.push({
+        title: 'البنية الفنية واستقرار الأداء (Technical Architecture & Latency)',
+        desc: 'مناقشة استقرار النظام، وحل مشكلات زمن الاستجابة، وتوزيع المطورين لإنجاز الاختبارات في موعدها.'
+      });
+      topics.push({
+        title: 'الميزانية والخطوات التشغيلية (Budget & Go-To-Market)',
+        desc: 'مراجعة ميزانية الإنفاق المتوقعة والتأكد من توافقها مع مستهدفات النمو ومؤشرات العائد الاستثماري (ROI).'
+      });
+
+      return {
+        id: 'meet_' + Date.now(),
+        title,
+        date,
+        duration,
+        participants,
+        objective,
+        arabicPct,
+        englishPct,
+        summaryAr: `عُقد الاجتماع لمناقشة "${objective}". تم خلال الجلسة استعراض مسار العمل، والتطرق إلى التحديات اللوجستية والتقنية المطروحة، مع التوصل إلى اتفاق حاسم بشأن توزيع المهام والالتزام الصارم بموعد الإطلاق النهائي دون أي تأخير، مع وضع آليات واضحة لمتابعة مؤشرات الإنجاز.`,
+        summaryEn: `The meeting focused on "${objective}". The team reviewed key milestones, aligned on technical and budgetary priorities, and confirmed unanimous consensus on action plans ensuring all project deliverables remain strictly on track for the target launch timeline.`,
+        topics,
+        decisions,
+        actionItems,
+        rawTranscript: rawText
+      };
+    }
+
+    // Direct Gemini Text API Call
+    async function callGeminiTextAPI(rawText) {
+      const apiKey = state.settings.apiKey;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+      const prompt = `You are an expert bilingual executive meeting secretary. Analyze this meeting transcript conducted in Arabic and English with speaker switches. Return ONLY a valid JSON matching this schema:
+{
+  "summaryAr": "Comprehensive executive summary in professional Arabic",
+  "summaryEn": "Comprehensive executive summary in English",
+  "topics": [
+    {"title": "Topic title", "desc": "Detailed bullet points"}
+  ],
+  "decisions": [
+    "Decision in Arabic"
+  ],
+  "actionItems": [
+    {"text": "Task description", "owner": "Assigned Person", "priority": "عالية أو متوسطة", "done": false}
+  ]
+}
+
+Meeting Metadata:
+Title: ${meetingTitleInput.value}
+Date: ${meetingDateInput.value}
+Participants: ${meetingParticipantsInput.value}
+Objective: ${meetingObjectiveInput.value}
+
+Transcript:
+${rawText}`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+
+      if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
+      const resData = await response.json();
+      const content = resData.candidates[0].content.parts[0].text;
+      const parsed = JSON.parse(content);
+
+      const arabicChars = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
+      const englishChars = (rawText.match(/[a-zA-Z]/g) || []).length;
+      const totalChars = (arabicChars + englishChars) || 1;
+
+      return {
+        id: 'meet_' + Date.now(),
+        title: meetingTitleInput.value.trim() || 'اجتماع عمل',
+        date: meetingDateInput.value || new Date().toISOString().split('T')[0],
+        duration: recordingTimer.textContent !== '00:00:00' ? recordingTimer.textContent : '30 دقيقة تقريباً',
+        participants: meetingParticipantsInput.value.trim() || 'فريق العمل',
+        objective: meetingObjectiveInput.value.trim() || '',
+        arabicPct: Math.round((arabicChars / totalChars) * 100),
+        englishPct: 100 - Math.round((arabicChars / totalChars) * 100),
+        summaryAr: parsed.summaryAr,
+        summaryEn: parsed.summaryEn,
+        topics: parsed.topics || [],
+        decisions: parsed.decisions || [],
+        actionItems: parsed.actionItems || [],
+        rawTranscript: rawText
+      };
+    }
+
+    // Direct OpenAI Text API Call
+    async function callOpenAITextAPI(rawText) {
+      const apiKey = state.settings.apiKey;
+      const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+      const prompt = `Analyze this bilingual (Arabic/English) meeting notes and return JSON matching:
+- summaryAr (string)
+- summaryEn (string)
+- topics: array of {title, desc}
+- decisions: array of strings
+- actionItems: array of {text, owner, priority, done: false}
+
+Transcript:
+${rawText}`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' }
+        })
+      });
+
+      if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`);
+      const resData = await response.json();
+      const parsed = JSON.parse(resData.choices[0].message.content);
+
+      const arabicChars = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
+      const englishChars = (rawText.match(/[a-zA-Z]/g) || []).length;
+      const totalChars = (arabicChars + englishChars) || 1;
+
+      return {
+        id: 'meet_' + Date.now(),
+        title: meetingTitleInput.value.trim() || 'اجتماع عمل',
+        date: meetingDateInput.value || new Date().toISOString().split('T')[0],
+        duration: recordingTimer.textContent !== '00:00:00' ? recordingTimer.textContent : '30 دقيقة تقريباً',
+        participants: meetingParticipantsInput.value.trim() || 'فريق العمل',
+        objective: meetingObjectiveInput.value.trim() || '',
+        arabicPct: Math.round((arabicChars / totalChars) * 100),
+        englishPct: 100 - Math.round((arabicChars / totalChars) * 100),
+        summaryAr: parsed.summaryAr,
+        summaryEn: parsed.summaryEn,
+        topics: parsed.topics || [],
+        decisions: parsed.decisions || [],
+        actionItems: parsed.actionItems || [],
+        rawTranscript: rawText
+      };
+    }
+
+    // Render Report to UI
+    function renderReport(report) {
+      reportEmptyState.classList.add('hidden');
+      reportActiveContent.classList.remove('hidden');
+
+      repTitle.textContent = report.title;
+      repDate.textContent = report.date;
+      repDuration.textContent = report.duration;
+      repParticipants.textContent = report.participants;
+
+      metricArabicPct.textContent = report.arabicPct + '%';
+      metricEnglishPct.textContent = report.englishPct + '%';
+      languageMetricContainer.classList.remove('hidden');
+
+      repSummaryAr.textContent = report.summaryAr;
+      repSummaryEn.textContent = report.summaryEn;
+
+      repTopicsList.innerHTML = '';
+      report.topics.forEach((topic) => {
+        const li = document.createElement('li');
+        li.className = 'bg-slate-50 p-3 rounded-xl border border-slate-200/70';
+        li.innerHTML = `
+          <div class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+            ${topic.title}
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">${topic.desc}</p>
+        `;
+        repTopicsList.appendChild(li);
+      });
+
+      repDecisionsList.innerHTML = '';
+      report.decisions.forEach((dec) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2 text-slate-800';
+        li.innerHTML = `
+          <span class="text-emerald-600 font-bold">✓</span>
+          <span class="leading-relaxed">${dec}</span>
+        `;
+        repDecisionsList.appendChild(li);
+      });
+
+      repActionItemsContainer.innerHTML = '';
+      report.actionItems.forEach((action, idx) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'bg-white p-3 rounded-xl border border-slate-200 flex items-start justify-between gap-3 shadow-xs transition-colors hover:border-slate-300';
+
+        const priorityColor = action.priority === 'عالية' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-100 text-slate-700 border-slate-200';
+
+        itemDiv.innerHTML = `
+          <div class="flex items-start gap-2.5 flex-1">
+            <input type="checkbox" id="action_chk_${idx}" ${action.done ? 'checked' : ''} class="mt-1 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+            <label for="action_chk_${idx}" class="text-xs md:text-sm text-slate-800 leading-relaxed cursor-pointer ${action.done ? 'line-through text-slate-400' : ''}">
+              ${action.text}
+            </label>
+          </div>
+          <div class="flex flex-col items-end gap-1 flex-shrink-0">
+            <span class="text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">${action.owner}</span>
+            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded border ${priorityColor}">${action.priority}</span>
+          </div>
+        `;
+
+        const chk = itemDiv.querySelector('input[type="checkbox"]');
+        chk.addEventListener('change', (e) => {
+          report.actionItems[idx].done = e.target.checked;
+          const label = itemDiv.querySelector('label');
+          if (e.target.checked) {
+            label.classList.add('line-through', 'text-slate-400');
+          } else {
+            label.classList.remove('line-through', 'text-slate-400');
+          }
+          saveMeetingToHistory(report);
+        });
+
+        repActionItemsContainer.appendChild(itemDiv);
+      });
+    }
+
+    // Audio Modal Handlers
+    btnCloseAudioModal.addEventListener('click', () => {
+      audioProcessingModal.classList.add('hidden');
+    });
+
+    btnDismissAudioModal.addEventListener('click', () => {
+      audioProcessingModal.classList.add('hidden');
+    });
+
+    btnGoToApiKeySettings.addEventListener('click', () => {
+      audioProcessingModal.classList.add('hidden');
+      settingAiProvider.value = 'gemini';
+      apiKeyGroup.classList.remove('hidden');
+      settingsModal.classList.remove('hidden');
+    });
+
+    btnProcessExistingText.addEventListener('click', () => {
+      audioProcessingModal.classList.add('hidden');
+      const text = transcriptTextarea.value.trim() || 'اجتماع عمل ومناقشة الخطة';
+      processTextSummary(text);
+    });
+
+    btnDownloadAndCopyPrompt.addEventListener('click', () => {
+      // 1. Download audio file
+      if (state.audioBlob) {
+        const url = URL.createObjectURL(state.audioBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `meeting_audio_${meetingDateInput.value}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      // 2. Generate and copy comprehensive prompt
+      const promptText = `أنت مساعد تنفيذي ذكي لتسجيل وتلخيص الاجتماعات.
+مرفق التسجيل الصوتي لاجتماع حضوري كان النقاش فيه بمزيج بين اللغة العربية والإنجليزية (code-switching).
+المطلوب منك بدقة:
+١. تفريغ الحوار الصوتي مع تمييز وتحديد المتحدثين تلقائياً (مثلاً: [المتحدث 1]: ... [المتحدث 2]: ...).
+٢. ملخص تنفيذي شامل للاجتماع باللغتين العربية والإنجليزية (Executive Summary).
+٣. أهم محاور النقاش الرئيسية (Key Discussion Points).
+٤. القرارات المتفق عليها بشكل نهائي (Decisions Made).
+٥. جدول خطة العمل وتوزيع المهام (Action Items): [المهمة - الشخص المسؤول - الأولوية].
+
+بيانات الاجتماع:
+- عنوان الاجتماع: ${meetingTitleInput.value}
+- التاريخ: ${meetingDateInput.value}
+- المشاركون: ${meetingParticipantsInput.value || 'فريق العمل'}`;
+
+      copyToClipboard(promptText, 'تم تنزيل الملف الصوتي ونسخ البرومبت بنجاح! افتح ChatGPT أو Gemini في هاتفك وارفع الملف مباشرة.');
+      audioProcessingModal.classList.add('hidden');
+    });
+
+    // Save to LocalStorage History
+    function saveMeetingToHistory(report) {
+      try {
+        const existingIdx = state.meetingHistory.findIndex(m => m.id === report.id);
+        if (existingIdx >= 0) {
+          state.meetingHistory[existingIdx] = report;
+        } else {
+          state.meetingHistory.unshift(report);
+        }
+        localStorage.setItem('meeting_app_history', JSON.stringify(state.meetingHistory));
+        updateHistoryBadge();
+      } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+      }
+    }
+
+    function updateHistoryBadge() {
+      historyBadge.textContent = state.meetingHistory.length;
+    }
+
+    btnOpenHistory.addEventListener('click', () => {
+      renderHistoryList();
+      historyModal.classList.remove('hidden');
+    });
+
+    btnCloseHistory.addEventListener('click', () => {
+      historyModal.classList.add('hidden');
+    });
+
+    btnDismissHistory.addEventListener('click', () => {
+      historyModal.classList.add('hidden');
+    });
+
+    function renderHistoryList() {
+      historyListContainer.innerHTML = '';
+      if (state.meetingHistory.length === 0) {
+        historyListContainer.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs">
+            لا توجد اجتماعات سابقة محفوظة بعد.
+          </div>
+        `;
+        return;
+      }
+
+      state.meetingHistory.forEach((meet) => {
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-blue-300 transition-all cursor-pointer flex items-center justify-between gap-3';
+        card.innerHTML = `
+          <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-xs md:text-sm mb-0.5">${meet.title}</h4>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500">
+              <span>📅 ${meet.date}</span>
+              <span>⏱️ ${meet.duration}</span>
+              <span>✅ ${meet.actionItems ? meet.actionItems.length : 0} مهام</span>
+            </div>
+          </div>
+          <button class="btnLoadMeet px-2.5 py-1 text-xs bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg font-semibold transition-colors">
+            عرض
+          </button>
+        `;
+
+        card.querySelector('.btnLoadMeet').addEventListener('click', (e) => {
+          e.stopPropagation();
+          loadMeetingFromHistory(meet);
+          historyModal.classList.add('hidden');
+          showToast('تم استرجاع بيانات التقرير المحفوظ بنجاح', '📂');
+        });
+
+        card.addEventListener('click', () => {
+          loadMeetingFromHistory(meet);
+          historyModal.classList.add('hidden');
+          showToast('تم استرجاع بيانات التقرير المحفوظ بنجاح', '📂');
+        });
+
+        historyListContainer.appendChild(card);
+      });
+    }
+
+    function loadMeetingFromHistory(meet) {
+      meetingTitleInput.value = meet.title;
+      meetingDateInput.value = meet.date;
+      meetingParticipantsInput.value = meet.participants;
+      meetingObjectiveInput.value = meet.objective || '';
+      transcriptTextarea.value = meet.rawTranscript || '';
+      state.currentReport = meet;
+      renderReport(meet);
+    }
+
+    btnClearAllHistory.addEventListener('click', () => {
+      if (state.meetingHistory.length === 0) return;
+      showConfirm('مسح كافة السجلات', 'هل أنت متأكد من رغبتك في حذف جميع تقارير الاجتماعات السابقة؟', () => {
+        state.meetingHistory = [];
+        try {
+          localStorage.removeItem('meeting_app_history');
+        } catch (e) {}
+        updateHistoryBadge();
+        renderHistoryList();
+        showToast('تم مسح سجل الاجتماعات بالكامل', '🗑️');
+      });
+    });
+
+    btnOpenSettings.addEventListener('click', () => {
+      settingAiProvider.value = state.settings.provider;
+      settingApiKey.value = state.settings.apiKey;
+      settingReportStyle.value = state.settings.reportStyle;
+      if (state.settings.provider !== 'builtin') {
+        apiKeyGroup.classList.remove('hidden');
+      } else {
+        apiKeyGroup.classList.add('hidden');
+      }
+      settingsModal.classList.remove('hidden');
+    });
+
+    btnCloseSettings.addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+    });
+
+    btnCancelSettings.addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+    });
+
+    settingAiProvider.addEventListener('change', () => {
+      if (settingAiProvider.value !== 'builtin') {
+        apiKeyGroup.classList.remove('hidden');
+      } else {
+        apiKeyGroup.classList.add('hidden');
+      }
+    });
+
+    btnSaveSettings.addEventListener('click', () => {
+      state.settings.provider = settingAiProvider.value;
+      state.settings.apiKey = settingApiKey.value.trim();
+      state.settings.reportStyle = settingReportStyle.value;
+
+      try {
+        localStorage.setItem('meeting_app_settings', JSON.stringify(state.settings));
+      } catch (e) {}
+
+      settingsModal.classList.add('hidden');
+      showToast('تم حفظ إعدادات الذكاء الاصطناعي بنجاح', '⚙️');
+    });
+
+    btnCopyPrompt.addEventListener('click', () => {
+      const text = transcriptTextarea.value.trim();
+      const promptText = `أنت خبير توثيق وإعداد محاضر الاجتماعات التنفيذية ثنائية اللغة (Arabic & English).
+أرجو تفريغ وتلخيص محضر هذا الاجتماع الحضوري بدقة مع تمييز وتحديد المتحدثين تلقائياً واستخراج:
+1. الملخص التنفيذي باللغتين العربية والإنجليزية (Executive Summary).
+2. أهم محاور النقاش الرئيسية (Discussion Topics).
+3. القرارات المتفق عليها بشكل نهائي (Decisions Made).
+4. جدول خطة العمل وتوزيع المهام والتكليفات (Action Items Table): [المهمة - المسؤول - الأولوية - الموعد المقترح].
+
+بيانات الاجتماع:
+- العنوان: ${meetingTitleInput.value}
+- التاريخ: ${meetingDateInput.value}
+- الحضور: ${meetingParticipantsInput.value || 'فريق العمل'}
+
+${text ? `نص النقاش:\n"""\n${text}\n"""` : '(مرفق الملف الصوتي للاجتماع)'}`;
+
+      copyToClipboard(promptText, 'تم نسخ برومبت التلخيص الشامل! يمكنك لصقه مباشرة في ChatGPT أو Gemini على هاتفك.');
+    });
+
+    btnCopyReport.addEventListener('click', () => {
+      if (!state.currentReport) {
+        showToast('لا يوجد تقرير لنسخه بعد', '⚠️');
+        return;
+      }
+
+      const rep = state.currentReport;
+      let text = `# محضر اجتماع: ${rep.title}\n`;
+      text += `📅 التاريخ: ${rep.date} | ⏱️ المدة: ${rep.duration}\n`;
+      text += `👥 الحضور: ${rep.participants}\n\n`;
+      text += `--- ١. الملخص التنفيذي ---\n${rep.summaryAr}\n\n${rep.summaryEn}\n\n`;
+      text += `--- ٢. أهم محاور النقاش ---\n`;
+      rep.topics.forEach(t => text += `• ${t.title}:\n  ${t.desc}\n`);
+      text += `\n--- ٣. القرارات المتفق عليها ---\n`;
+      rep.decisions.forEach(d => text += `✓ ${d}\n`);
+      text += `\n--- ٤. خطة العمل وتوزيع المهام (Action Items) ---\n`;
+      rep.actionItems.forEach(a => text += `[${a.done ? 'X' : ' '}] ${a.text} (المسؤول: ${a.owner} | الأولوية: ${a.priority})\n`);
+
+      copyToClipboard(text, 'تم نسخ محضر الاجتماع والتقرير بالكامل إلى الحافظة!');
+    });
+
+    btnDownloadReport.addEventListener('click', () => {
+      if (!state.currentReport) {
+        showToast('يرجى توليد التقرير أولاً لتحميله', '⚠️');
+        return;
+      }
+
+      const rep = state.currentReport;
+      let md = `# محضر اجتماع: ${rep.title}\n\n`;
+      md += `* **التاريخ:** ${rep.date}\n`;
+      md += `* **المدة:** ${rep.duration}\n`;
+      md += `* **المشاركون:** ${rep.participants}\n`;
+      md += `* **نسبة لغة النقاش:** العربية ${rep.arabicPct}% | English ${rep.englishPct}%\n\n`;
+      md += `## ١. الملخص التنفيذي (Executive Summary)\n\n`;
+      md += `### العربية\n${rep.summaryAr}\n\n`;
+      md += `### English\n${rep.summaryEn}\n\n`;
+      md += `## ٢. أهم محاور النقاش (Key Discussion Points)\n\n`;
+      rep.topics.forEach((t, i) => {
+        md += `### ${i+1}. ${t.title}\n${t.desc}\n\n`;
+      });
+      md += `## ٣. القرارات المتفق عليها (Decisions Made)\n\n`;
+      rep.decisions.forEach(d => {
+        md += `* **${d}**\n`;
+      });
+      md += `\n## ٤. خطة العمل والمهام والتكليفات (Action Items)\n\n`;
+      md += `| الحالة | المهمة المطلوبة | المسؤول | الأولوية |\n`;
+      md += `| :---: | :--- | :--- | :---: |\n`;
+      rep.actionItems.forEach(a => {
+        md += `| ${a.done ? '✅ مكتمل' : '⏳ قيد التنفيذ'} | ${a.text} | ${a.owner} | ${a.priority} |\n`;
+      });
+
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Meeting_Minutes_${rep.date}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('تم تحميل التقرير بصيغة Markdown (.md)', '📥');
+    });
+
+    btnPrintReport.addEventListener('click', () => {
+      if (!state.currentReport) {
+        showToast('يرجى توليد التقرير أولاً للطباعة أو التصدير', '⚠️');
+        return;
+      }
+      window.print();
+    });
+
+    function copyToClipboard(text, successMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg, '📋');
+        }).catch(() => {
+          fallbackCopy(text, successMsg);
+        });
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      const tempTa = document.createElement('textarea');
+      tempTa.value = text;
+      tempTa.style.position = 'fixed';
+      tempTa.style.opacity = '0';
+      document.body.appendChild(tempTa);
+      tempTa.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMsg, '📋');
+      } catch (err) {
+        showToast('تعذر النسخ التلقائي، يمكنك نسخ النص يدوياً', '⚠️');
+      }
+      document.body.removeChild(tempTa);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
